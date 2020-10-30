@@ -1,0 +1,51 @@
+{
+        "calva.customREPLCommandSnippets": [
+        {
+            "name": "Start kybernetik Server",
+            "ns": "user",
+            "repl": "clj",
+            "snippet": "(start)"
+        },
+        {
+            "name": "Stop kybernetik Server",
+            "ns": "user",
+            "repl": "clj",
+            "snippet": "(stop)"
+        },
+        {
+            "name": "Restart kybernetik Server",
+            "ns": "user",
+            "repl": "clj",
+            "snippet": "(restart)"
+        }
+    ],
+    "calva.replConnectSequences": [
+                {
+            "name": "Server only - kybernetik",
+            "projectType": "Leiningen",
+            "afterCLJReplJackInCode": "(start)",
+            "cljsType": "none",
+            "menuSelections": {
+                "leinProfiles": [
+                    "dev"
+                ]
+            }
+        },
+        {
+            "name": "Server + Client – kybernetik",
+            "projectType": "lein-shadow",
+            "afterCLJReplJackInCode": "(start)",
+            "cljsType": "shadow-cljs",
+            "menuSelections": {
+                "leinProfiles": [
+                    "dev"
+                ],
+                "cljsLaunchBuilds": [
+                    "app",
+                    "test"
+                ],
+                "cljsDefaultBuild": "app"
+            }
+        }
+    ]
+}
