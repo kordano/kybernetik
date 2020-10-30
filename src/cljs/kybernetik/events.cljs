@@ -26,27 +26,30 @@
     {:common/navigate-fx! [url-key params query]}))
 
 (rf/reg-event-db
-  :set-docs
-  (fn [db [_ docs]]
-    (assoc db :docs docs)))
-
-(rf/reg-event-fx
-  :fetch-docs
-  (fn [_ _]
-    {:http-xhrio {:method          :get
-                  :uri             "/docs"
-                  :response-format (ajax/raw-response-format)
-                  :on-success       [:set-docs]}}))
-
-(rf/reg-event-db
   :common/set-error
   (fn [db [_ error]]
     (assoc db :common/error error)))
 
+(rf/reg-event-db
+ :set-users
+ (fn [db [_ {:keys [users]}]]
+   (assoc db :users users)))
+
 (rf/reg-event-fx
-  :page/init-home
-  (fn [_ _]
-    {:dispatch [:fetch-docs]}))
+ :fetch-users
+ (fn [_ _]
+   {:http-xhrio {:method :get
+                 :uri "/api/users"
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success [:set-users]}}))
+
+
+(rf/reg-event-fx
+ :page/init-users
+ (fn [_ _]
+   {:dispatch [:fetch-users]}))
+
+
 
 ;;subscriptions
 
@@ -71,6 +74,11 @@
   :docs
   (fn [db _]
     (:docs db)))
+
+(rf/reg-sub
+ :users
+ (fn [db _]
+   (:users db)))
 
 (rf/reg-sub
   :common/error

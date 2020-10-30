@@ -45,8 +45,18 @@
                            (apply str)) i))
                (inc i))))))
 
+(def user-pull-pattern
+  '[:db/id
+    :user/firstname
+    :user/lastname
+    :user/email
+    :user/name
+    :user/ref
+    {:user/role [:db/ident]
+     :user/supervisor [:db/id :user/firstname :user/lastname :user/ref]}])
+
 (defn get-user [id]
-  (d/pull @conn '[* {:user/role [:db/ident]}] id))
+  (d/pull @conn user-pull-pattern id))
 
 (defn user-entity [id]
   (d/entity @conn id))
@@ -64,10 +74,11 @@
   (d/transact conn [[:db/retractEntity id]]))
 
 (defn list-users []
-  (d/q '[:find [(pull ?e [* {:user/role [:db/ident]}]) ...]
-         :where
-         [?e :user/name _]]
-       @conn))
+  (d/q {:query  '[:find [(pull ?e ?pattern) ...]
+                  :in $ ?pattern
+                  :where
+                  [?e :user/name _]]
+        :args [@conn user-pull-pattern]}))
 
 (defn validate-user [{:keys [email password]}]
   (if-let [user (d/entity @conn [:user/email email])]

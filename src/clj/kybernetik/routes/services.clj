@@ -54,6 +54,9 @@
     {:get (constantly (ok {:message "pong"}))}]
 
    ["/users" {:post {:parameters {:body :kybernetik.models.users/new-user}
-                     :handler kcu/create}}]
+                     :handler kcu/create}
+              :get {:responses {200 {:body :kybernetik.models.users/user-list}}
+                    :handler kcu/all}}
+    ]
 
    ])
