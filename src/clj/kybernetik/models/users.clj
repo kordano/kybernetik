@@ -44,3 +44,11 @@
 (s/def :list-user/users (s/coll-of ::list-user))
 
 (s/def ::user-list (s/keys :req-un [:list-user/users]))
+
+(s/def :credential/email string?)
+(s/def :credential/password string?)
+(s/def ::credential (s/keys :req-un [:credential/email
+                                     :credential/password]))
+
+(s/def :jws/token string?)
+(s/def ::jws (s/keys :req-un [:jws/token]))

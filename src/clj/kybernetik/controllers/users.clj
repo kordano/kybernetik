@@ -1,6 +1,7 @@
 (ns kybernetik.controllers.users
   (:require [kybernetik.db.core :as db]
             [kybernetik.utils :as u]
+            [kybernetik.middleware :as m]
             [kybernetik.responses :as r]))
 
 (defn create [{{{:keys [name firstname email lastname password role]} :body} :parameters}]
@@ -23,3 +24,15 @@
                             u/remove-namespace))
                       (db/list-users))}))
 
+
+(defn sign-in [{{{:keys [email password]} :body} :parameters}]
+  (try
+    (if (db/validate-user {:email email
+                           :password password})
+      (let [user (-> [:user/email email]
+                     db/get-user
+                     (update :user/role :db/ident))]
+        (r/ok {:token (m/token user)}))
+      (r/unauthorized {:message "Credentials invalid."}))
+    (catch Exception e
+      (r/bad-request {:message (.getMessage e)}))))
