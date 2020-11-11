@@ -57,16 +57,14 @@
            {:url "/api/swagger.json"
             :config {:validator-url nil}})}]
 
-   ["/public"
-    ["/login"
-     {:post {:responses {200 {:body :kybernetik.models.users/jws}}
-             :parameters {:body :kybernetik.models.users/credential}
-             :swagger {:tags ["self-service"]}
-             :handler kcu/sign-in}}]]
+   ["/login"
+    {:post {:responses {200 {:body :kybernetik.models.users/jws}}
+            :parameters {:body :kybernetik.models.users/credential}
+            :swagger {:tags ["self-service"]}
+            :handler kcu/sign-in}}]
 
-   ["/restricted" {:middleware [middleware/wrap-restricted]}
-
-    ["/users" {:post {:parameters {:body :kybernetik.models.users/new-user}
-                      :handler kcu/create}
-               :get {:responses {200 {:body :kybernetik.models.users/user-list}}
-                     :handler kcu/all}}]]])
+   ["/users" {:post {:parameters {:body :kybernetik.models.users/new-user}
+                     :handler kcu/create}
+              :middleware [middleware/wrap-restricted]
+              :get {:responses {200 {:body :kybernetik.models.users/user-list}}
+                    :handler kcu/all}}]])

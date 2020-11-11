@@ -37,11 +37,35 @@
 
 (rf/reg-event-fx
  :fetch-users
- (fn [_ _]
+ (fn [{db :db} _]
    {:http-xhrio {:method :get
                  :uri "/api/users"
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success [:set-users]}}))
+                 :headers {"Authorization" (str "Token " (:token db))}
+                 :on-success [:set-users]
+                 :on-failure [:set-message]}}))
+
+(rf/reg-event-db
+ :set-token
+ (fn [db [_ {:keys [token]}]]
+   (assoc db :token token)))
+
+(rf/reg-event-db
+ :set-message
+ (fn [db [_ {{:keys [message]} :response}]]
+   (js/alert message)
+   db))
+
+(rf/reg-event-fx
+ :sign-in
+ (fn [_ [_ credentials]]
+   {:http-xhrio {:method :post
+                 :uri "/api/login"
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :format (ajax/json-request-format)
+                 :params credentials
+                 :on-success [:set-token]
+                 :on-failure [:set-message]}}))
 
 
 (rf/reg-event-fx
@@ -49,7 +73,15 @@
  (fn [_ _]
    {:dispatch [:fetch-users]}))
 
+(rf/reg-event-db
+ :delete-token
+ (fn [db _]
+   (dissoc db :token)))
 
+(rf/reg-event-fx
+ :sign-out
+ (fn [_ _]
+   {:dispatch [:delete-token]}))
 
 ;;subscriptions
 
@@ -81,6 +113,12 @@
    (:users db)))
 
 (rf/reg-sub
+ :credentials/token
+ (fn [db _]
+   (:token db)))
+
+(rf/reg-sub
   :common/error
   (fn [db _]
     (:common/error db)))
+

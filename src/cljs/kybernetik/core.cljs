@@ -14,6 +14,9 @@
     [clojure.string :as string])
   (:import goog.History))
 
+(defn navigate! [match _]
+  (rf/dispatch [:common/navigate match]))
+
 (defn nav-link [uri title page]
   [:a.navbar-item
    {:href   uri
@@ -22,23 +25,51 @@
 
 (defn navbar []
   (r/with-let [expanded? (r/atom false)]
-              [:nav.navbar.is-light>div.container
-               [:div.navbar-brand
-                [:a.navbar-item {:href "/" :style {:font-weight :bold}} "kybernetik"]
-                [:span.navbar-burger.burger
-                 {:data-target :nav-menu
-                  :on-click #(swap! expanded? not)
-                  :class (when @expanded? :is-active)}
-                 [:span][:span][:span]]]
-               [:div#nav-menu.navbar-menu
-                {:class (when @expanded? :is-active)}
-                [:div.navbar-start
-                 [nav-link "#/" "Home" :home]
-                 [nav-link "#/users" "Users" :user-list]]]]))
+    (let [token @(rf/subscribe [:credentials/token])]
+      [:nav.navbar.is-light>div.container
+       [:div.navbar-brand
+        [:a.navbar-item {:href "/" :style {:font-weight :bold}} "kybernetik"]
+        [:span.navbar-burger.burger
+         {:data-target :nav-menu
+          :on-click #(swap! expanded? not)
+          :class (when @expanded? :is-active)}
+         [:span][:span][:span]]]
+       [:div#nav-menu.navbar-menu
+        {:class (when @expanded? :is-active)}
+        (when token
+          [:div.navbar-start
+           [nav-link "#/" "Home" :home]
+           [nav-link "#/users" "Users" :user-list]])
+        (when token
+          [:div.navbar-end>div.buttons
+           [:button.button {:on-click #(rf/dispatch [:sign-out])} "Sign out"]])]])))
 
-(defn about-page []
-  [:section.section>div.container>div.content
-   [:img {:src "/img/warning_clojure.png"}]])
+(defn login-page []
+  (r/with-let [input (r/atom {:email "root@kybernetik.io" :password "123"})]
+    (let [{:keys [email password]} @input]
+      [:section.section>div.container>div.content>div.columns.is-centered
+       [:div.column.card.is-half
+        [:header.card-header
+         [:p.card-header-title "Sign in"]]
+        [:div.card-content
+         [:div.content
+          [:div.field
+           [:label.label {:for "email"} "Email"]
+           [:input.input {:type "email"
+                          :value email
+                          :on-change (fn [e] (swap! input assoc :email (-> e .-target .-value)))
+                          :placeholder "max@mustermann.de"}]]
+          [:div.field
+           [:label.label {:for "password"} "Password"]
+           [:input.input {:name "password"
+                          :value password
+                          :type "password"
+                          :on-change (fn [e] (swap! input assoc :password (-> e .-target .-value)))
+                          :placeholder "12345"}]]]
+         [:footer.card-footer
+          [:button.button.card-footer-item
+           {:on-click (fn [_] (rf/dispatch [:sign-in @input]))}
+           "Sign in"]]]]])))
 
 (defn home-page []
   [:section.section>div.container>div.content>h2 "Welcome"])
@@ -74,17 +105,20 @@
 
 (defn page []
   (if-let [page @(rf/subscribe [:common/page])]
-    [:div
-     [navbar]
-     [page]]))
-
-(defn navigate! [match _]
-  (rf/dispatch [:common/navigate match]))
+    (if (empty? @(rf/subscribe [:credentials/token]))
+      [:div
+       [navbar]
+       [login-page]]
+      [:div
+       [navbar]
+       [page]])))
 
 (def router
   (reitit/router
-    [["/" {:name        :home
-           :view        #'home-page}]
+    [["/" {:name :home
+           :view #'home-page}]
+     ["/login" {:name :login
+                :view #'login-page}]
      ["/users" {:name :users
                 :view #'users-list-page
                 :controllers [{:start (fn [_] (rf/dispatch [:page/init-users]))}]}]]))
@@ -109,5 +143,6 @@
 (comment
 
   (init!)
+  
 
   )
