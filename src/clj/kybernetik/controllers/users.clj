@@ -24,6 +24,13 @@
                             u/remove-namespace))
                       (db/list-users))}))
 
+(defn update-user
+  "Updates a user given an ID which could be either an entity ID or [:user/email email]"
+  [{{{:keys [name firstname email lastname role]} :body} :parameters
+    identity :identity}]
+  (println identity)
+  (r/ok {:info (str "UPDATE " identity)}))
+
 
 (defn sign-in [{{{:keys [email password]} :body} :parameters}]
   (try

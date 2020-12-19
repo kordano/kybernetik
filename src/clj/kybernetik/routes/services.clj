@@ -63,8 +63,8 @@
             :swagger {:tags ["self-service"]}
             :handler kcu/sign-in}}]
 
-   ["/users" {:post {:parameters {:body :kybernetik.models.users/new-user}
-                     :handler kcu/create}
-              :middleware [middleware/wrap-restricted]
-              :get {:responses {200 {:body :kybernetik.models.users/user-list}}
-                    :handler kcu/all}}]])
+   ["/users" {:middleware [middleware/wrap-restricted]}
+    ["" {:post {:parameters {:body :kybernetik.models.users/new-user}
+             :handler kcu/create}
+          :get {:responses {200 {:body :kybernetik.models.users/user-list}}
+            :handler kcu/all}}]]])

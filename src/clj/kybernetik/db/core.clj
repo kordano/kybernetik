@@ -323,7 +323,7 @@
                    :vacation/hours 1.0
                    :vacation/user 40})
   
-  (get-current-year-user-timesheet-dates {:user-id 38})
+  (get-current-year-user-timesheet-dates {:user-id 39})
   
   )
 
